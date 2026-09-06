@@ -1,0 +1,367 @@
+/*
+ * Print stylesheet for the SENG 34213 deliverables.
+ *
+ * Optimised for A4 paper and for the PDF that scripts/build-pdf.js produces.
+ * The priorities, in order:
+ *
+ *   1. Legibility at 11pt on paper, which is a different problem from
+ *      legibility on a screen — hence a serif body face and a measure that
+ *      does not run the full page width on wide tables.
+ *   2. Structure that survives pagination: headings do not strand themselves
+ *      at the foot of a page, table headers repeat, code blocks do not split
+ *      across a page break where it can be avoided.
+ *   3. Wide content degrades gracefully. A 10-column generated table is going
+ *      to be tight on A4; it shrinks rather than overflowing off the page.
+ */
+
+/* ── Page setup ─────────────────────────────────────────────────────────── */
+
+@page {
+  size: A4;
+  margin: 20mm 18mm;
+}
+
+:root {
+  --ink: #1a1a1a;
+  --ink-soft: #4a4a4a;
+  --ink-faint: #767676;
+  --rule: #d4d4d4;
+  --rule-strong: #9a9a9a;
+  --accent: #1c4f7c;
+  --wash: #f6f7f9;
+  --code-bg: #f4f4f6;
+  --ok: #1a7f37;
+  --warn: #9a6700;
+  --bad: #b3261e;
+}
+
+/* ── Body ───────────────────────────────────────────────────────────────── */
+
+html {
+  font-size: 11pt;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background: #fff;
+  font-family: "Source Serif Pro", "Charter", "Georgia", "Times New Roman", serif;
+  line-height: 1.55;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+.document {
+  max-width: 190mm;
+  margin: 0 auto;
+}
+
+p {
+  margin: 0 0 0.75em;
+  orphans: 3;
+  widows: 3;
+}
+
+/* ── Headings ───────────────────────────────────────────────────────────── */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: var(--ink);
+  font-weight: 600;
+  line-height: 1.25;
+  break-after: avoid-page;
+  page-break-after: avoid;
+  margin: 1.6em 0 0.5em;
+}
+
+/* Top-level sections start a new page. The report, SRS and SDS are all long
+   enough that a section beginning two lines from the foot of a page reads as
+   a mistake. */
+h1 {
+  font-size: 20pt;
+  letter-spacing: -0.01em;
+  padding-bottom: 0.3em;
+  border-bottom: 2px solid var(--accent);
+  break-before: page;
+  page-break-before: always;
+}
+
+h1:first-of-type,
+.cover h1 {
+  break-before: avoid;
+  page-break-before: avoid;
+}
+
+h2 {
+  font-size: 15pt;
+  color: var(--accent);
+  margin-top: 1.8em;
+}
+
+h3 {
+  font-size: 12.5pt;
+  margin-top: 1.5em;
+}
+
+h4 {
+  font-size: 11pt;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+h5,
+h6 {
+  font-size: 10.5pt;
+  color: var(--ink-soft);
+}
+
+/* ── Cover page ─────────────────────────────────────────────────────────── */
+
+.cover {
+  break-after: page;
+  page-break-after: always;
+  padding-top: 18mm;
+}
+
+.cover h1 {
+  font-size: 30pt;
+  border: none;
+  margin-bottom: 0.1em;
+}
+
+.cover h2 {
+  font-size: 17pt;
+  color: var(--ink-soft);
+  font-weight: 400;
+  margin-top: 0;
+}
+
+.cover h3 {
+  font-size: 11pt;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+  margin-top: 2.5em;
+}
+
+.cover table {
+  font-size: 10pt;
+}
+
+/* ── Links ──────────────────────────────────────────────────────────────── */
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(28, 79, 124, 0.3);
+}
+
+/* On paper a bare URL is the only way to follow an external link, so external
+   hrefs are printed. Internal anchors are not — printing "#section-4" after
+   every cross-reference makes the text unreadable for no gain. */
+@media print {
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 8.5pt;
+    color: var(--ink-faint);
+    word-break: break-all;
+  }
+}
+
+/* ── Lists ──────────────────────────────────────────────────────────────── */
+
+ul,
+ol {
+  margin: 0 0 0.85em;
+  padding-left: 1.5em;
+}
+
+li {
+  margin-bottom: 0.25em;
+}
+
+li > ul,
+li > ol {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+}
+
+/* Checklists — the Definition of Done, the demonstration checklist. */
+li input[type="checkbox"] {
+  margin-right: 0.4em;
+}
+
+/* ── Tables ─────────────────────────────────────────────────────────────── */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0 1.4em;
+  font-size: 9.5pt;
+  font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  break-inside: auto;
+}
+
+/* A generated register can run to hundreds of rows across a dozen pages; the
+   header has to repeat or the later pages are unreadable. */
+thead {
+  display: table-header-group;
+}
+
+tbody tr {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+th {
+  text-align: left;
+  font-weight: 600;
+  background: var(--wash);
+  border-bottom: 1.5px solid var(--rule-strong);
+  padding: 0.45em 0.6em;
+}
+
+td {
+  padding: 0.4em 0.6em;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+
+tbody tr:nth-child(even) td {
+  background: #fbfbfc;
+}
+
+/* ── Code ───────────────────────────────────────────────────────────────── */
+
+code,
+kbd,
+samp {
+  font-family: "SF Mono", "JetBrains Mono", "Menlo", "Consolas", monospace;
+  font-size: 0.88em;
+}
+
+:not(pre) > code {
+  background: var(--code-bg);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 0.08em 0.32em;
+  white-space: nowrap;
+}
+
+td :not(pre) > code {
+  white-space: normal;
+  word-break: break-word;
+}
+
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+  padding: 0.8em 1em;
+  margin: 1em 0 1.3em;
+  overflow-x: auto;
+  font-size: 8.8pt;
+  line-height: 1.45;
+  break-inside: avoid;
+  page-break-inside: avoid;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  white-space: inherit;
+}
+
+/* An ASCII diagram must not wrap — a wrapped box diagram is noise. Diagrams
+   are the one place horizontal overflow is preferable to reflow, so they are
+   shrunk instead. `text` is the info string these documents use for diagrams,
+   directory trees and plain specimens; the untagged case is kept because a
+   fence added later may not carry one. */
+pre:has(> code.language-text),
+pre:has(> code:not([class])) {
+  white-space: pre;
+  font-size: 8pt;
+}
+
+/* ── Blockquotes and callouts ───────────────────────────────────────────── */
+
+blockquote {
+  margin: 1.1em 0;
+  padding: 0.7em 1.1em;
+  border-left: 3px solid var(--accent);
+  background: var(--wash);
+  color: var(--ink-soft);
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+blockquote > :first-child {
+  margin-top: 0;
+}
+
+blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+/* ── Rules and figures ──────────────────────────────────────────────────── */
+
+hr {
+  border: none;
+  border-top: 1px solid var(--rule);
+  margin: 2em 0;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* ── Status markers ─────────────────────────────────────────────────────── */
+
+/* The generated reports use ✅ / ❌ / 🟡 / 🔴 as status markers. Emoji render
+   inconsistently in headless Chromium's PDF output, so they are given a font
+   stack that includes a monochrome fallback rather than being left to chance. */
+td,
+th {
+  font-variant-emoji: text;
+}
+
+/* ── Screen preview ─────────────────────────────────────────────────────── */
+
+/* build/html/*.html is also opened directly in a browser to check a document
+   before rendering. This keeps that readable without pretending to be paper. */
+@media screen {
+  body {
+    background: #eceef1;
+    padding: 24px 0;
+  }
+
+  .document {
+    background: #fff;
+    padding: 26mm 20mm;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08);
+    border-radius: 2px;
+  }
+
+  h1 {
+    break-before: auto;
+    page-break-before: auto;
+  }
+
+  .cover {
+    break-after: auto;
+    page-break-after: auto;
+  }
+}
