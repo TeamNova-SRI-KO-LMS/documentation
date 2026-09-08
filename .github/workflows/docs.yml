@@ -1,0 +1,132 @@
+name: Documentation
+
+# The documentation repository has the same obligation as the code
+# repositories: what is committed must be internally consistent and must not
+# have drifted from what the pipeline produces. Three things are checked.
+#
+#   lint    — Markdown that renders the way it was written
+#   links   — every relative cross-reference resolves
+#   build   — every §10.1 deliverable renders to PDF without error
+#
+# `sync:check` runs inside the build job, where the testing repository is
+# checked out beside this one, because a stale generated artefact is the
+# failure mode that matters most: a submitted PDF quoting a coverage figure the
+# suite no longer produces is a false statement about the product.
+
+on:
+  push:
+    branches: [develop, main, 'docs/**', 'feature/**', 'fix/**']
+  pull_request:
+    branches: [develop, main]
+  workflow_dispatch:
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint & Links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: markdownlint
+        run: npm run lint
+
+      - name: Relative links resolve
+        run: npm run links
+
+  sync:
+    name: Generated Artefacts Are Current
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the documentation
+        uses: actions/checkout@v4
+        with:
+          path: documentation
+
+      - name: Check out the testing repository
+        uses: actions/checkout@v4
+        with:
+          repository: TeamNova-SRI-KO-LMS/testing
+          ref: develop
+          path: testing
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: documentation/package-lock.json
+
+      - name: Install dependencies
+        working-directory: documentation
+        run: npm ci
+
+      # Compares the committed copies against the artefacts checked in to the
+      # testing repository. It does not re-run the suite: that is the testing
+      # repository's own pipeline, and duplicating it here would double the
+      # cost while testing nothing new.
+      - name: Committed copies match their source
+        working-directory: documentation
+        env:
+          TESTING_REPO: ${{ github.workspace }}/testing
+        run: npm run sync:check
+
+  build:
+    name: Render Deliverables
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Render every §10.1 deliverable
+        run: npm run build:pdf:all
+
+      - name: Upload the rendered PDFs
+        uses: actions/upload-artifact@v4
+        with:
+          name: deliverables-pdf
+          path: build/pdf/
+          retention-days: 30
+
+  documentation:
+    name: Documentation Pipeline
+    runs-on: ubuntu-latest
+    needs: [lint, sync, build]
+    if: always()
+    steps:
+      # One required status check for branch protection to point at, rather
+      # than three that can be reconfigured independently.
+      - name: Every stage passed
+        run: |
+          if [ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" = "true" ]; then
+            echo "One or more stages failed."
+            exit 1
+          fi
+          echo "All stages passed."
