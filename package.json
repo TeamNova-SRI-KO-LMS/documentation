@@ -1,0 +1,30 @@
+{
+  "name": "@teamnova-sri-ko-lms/documentation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Project documentation for the SRI-KO Learning Management System \u2014 SENG 34213 System Development Project",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18.18.0"
+  },
+  "scripts": {
+    "sync": "node scripts/sync-testing-artefacts.js",
+    "sync:check": "node scripts/sync-testing-artefacts.js --check",
+    "fill-team": "node scripts/fill-team.js",
+    "fill-team:check": "node scripts/fill-team.js --check",
+    "build:pdf": "node scripts/build-pdf.js",
+    "build:pdf:all": "node scripts/build-pdf.js --all",
+    "build:install": "playwright install --with-deps chromium",
+    "lint": "markdownlint-cli2 \"**/*.md\" \"#node_modules\" \"#build\"",
+    "lint:fix": "markdownlint-cli2 --fix \"**/*.md\" \"#node_modules\" \"#build\"",
+    "links": "node scripts/check-links.js",
+    "verify": "npm run lint && npm run links && npm run sync:check && npm run audit:deps",
+    "clean": "node -e \"require('fs').rmSync('build',{recursive:true,force:true})\"",
+    "audit:deps": "npm audit --audit-level=high"
+  },
+  "devDependencies": {
+    "markdown-it": "^15.0.1",
+    "markdownlint-cli2": "^0.23.2",
+    "playwright": "^1.63.0"
+  }
+}

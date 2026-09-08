@@ -141,3 +141,21 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# ── SENG 34213 additions ────────────────────────────────────────────────────
+
+# Rendered deliverables. Regenerate with `npm run build:pdf`; the Markdown
+# source is the thing under version control.
+build/
+
+# Completed peer evaluations are confidential (§10.2) and must never be
+# committed to a repository the whole team can read.
+PeerEval_*.pdf
+PeerEval_*.docx
+**/peer-evaluation-*-completed.*
+
+# Local pointer to the testing repository, used by scripts/sync-testing-artefacts.js
+.testing-repo
+
+# macOS
+.DS_Store

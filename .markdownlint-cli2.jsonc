@@ -1,0 +1,68 @@
+// markdownlint configuration.
+//
+// The rules kept are the ones that catch real defects in a document: a broken
+// list, a heading level skipped so the table of contents comes out wrong, a
+// fenced block with no language so it renders unhighlighted. The rules turned
+// off are the ones that would fight the way these documents are written, and
+// each says why — a linter with unexplained exclusions gets more added to it
+// every time it complains, until it checks nothing.
+{
+  "config": {
+    "default": true,
+
+    // MD013 line-length. Prose here is hard-wrapped at 80 columns for readable
+    // diffs, but tables and links routinely exceed it and breaking them would
+    // break the rendering.
+    "MD013": false,
+
+    // MD033 inline HTML. The cover pages use <div class="cover"> so the print
+    // stylesheet can find them, and the blank form uses <br> for write-in space.
+    "MD033": false,
+
+    // MD024 duplicate headings. The retrospectives, the ADRs and the peer
+    // evaluation form repeat headings by design — "Went Well" appears in each
+    // sprint's file, "Contribution Quality" once per team member.
+    "MD024": { "siblings_only": true },
+
+    // MD041 first line must be a heading. Some documents open with YAML
+    // frontmatter that the PDF build reads.
+    "MD041": false,
+
+    // MD025 single top-level heading. The SRS, the SDS and the final report are
+    // multi-chapter documents: "# 4. System implementation" is a chapter, and
+    // the print stylesheet breaks a page on every h1. One h1 per file would
+    // mean demoting every chapter to h2 and every subsection with it, which
+    // makes the deepest headings h5.
+    "MD025": false,
+
+    // MD029 ordered-list numbering. The bibliography in the final report is one
+    // continuously numbered list broken by category headings, because a
+    // citation number has to stay stable — reference [14] is [14] wherever it
+    // is cited. markdownlint sees each category as a new list starting at the
+    // wrong number.
+    "MD029": false,
+
+    // MD036 emphasis-as-heading. Used deliberately for lead-ins inside a
+    // section — **Decision.** and **Lesson.** — which are not headings and
+    // should not appear in a table of contents.
+    "MD036": false,
+
+    // MD046 code-block style. Fenced everywhere.
+    "MD046": { "style": "fenced" }
+  },
+  "globs": ["**/*.md"],
+  "ignores": [
+    "node_modules",
+    "build",
+    // Generated artefacts. Their formatting is the generator's responsibility,
+    // and lint failures here would be unfixable without editing a copy that
+    // `npm run sync:check` requires to stay byte-identical to its source.
+    "documents/testing/test-register.md",
+    "documents/testing/defect-register.md",
+    "documents/testing/traceability-matrix.md",
+    "documents/testing/test-strategy.md",
+    "documents/testing/coverage-sprint8.md",
+    "documents/testing/endpoint-coverage.md",
+    "documents/security/owasp-checklist.md"
+  ]
+}
